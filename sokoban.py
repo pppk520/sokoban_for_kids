@@ -39,6 +39,8 @@ class Menu(object):
     def load_level_files(self, filenames=None): 
         if not filenames:            
             level_files = get_file_list(_LEVEL_FOLDER)
+        else:
+            level_files = list(filenames)
 
         self.app.grid_forget()                                                  
         self.app.level_files = level_files                                
@@ -46,7 +48,7 @@ class Menu(object):
 
     def open_file(self):
         filenames = askopenfilenames(initialdir=_LEVEL_FOLDER)
-        self.load_levels(filenames)
+        self.load_level_files(filenames)
 
 class Direction(object):
     left = 'Left'
@@ -223,14 +225,23 @@ class Application(tk.Frame):
             location, char = step_undo.maze_old
             row, column = location
 
+            self.level.maze[row][column] = char
             self.draw_item(char, row, column)
 
         if step_undo.maze_new:                                                  
             location, char = step_undo.maze_new 
             row, column = location                                              
-                                                                                
-            self.draw_item(char, row, column)                                   
-                                                 
+                                   
+            if location in self.level.crates:
+                self.level.crates[location].grid_forget()
+            
+            self.level.maze[row][column] = ' '                                 
+            self.draw_item(' ', row, column)                                   
+       
+        self.level.player.grid_forget()
+ 
+        self.level.player_position = step_undo.player_position_old                                         
+        self.draw_player(self.level.player_position)
 
         
     def draw_item(self, char, row, column):
@@ -272,7 +283,11 @@ class Application(tk.Frame):
         self.draw_player(level.player_position)
 
     def draw_player(self, player_position):
-        player_image = tk.PhotoImage(file=Image.player)                         
+        if player_position in self.level.holes:
+            player_image = tk.PhotoImage(file=Image.player_in_hole) 
+        else:
+            player_image = tk.PhotoImage(file=Image.player) 
+                        
         self.level.player = tk.Label(self.frame, image=player_image)            
         self.level.player.player_image = player_image                           
         self.level.player.grid(row=player_position[0],                    
@@ -317,6 +332,7 @@ class Application(tk.Frame):
 
         blocked = True
         undo_step = StepUndo()
+        holes = self.level.holes.copy()
 
         if direction == Direction.left and self.level.maze[row][column - 1] is not Maze.wall and column > 0:
             blocked, undo_step = self.move_crate((row, column - 1), (row, column - 2))
@@ -337,6 +353,8 @@ class Application(tk.Frame):
             blocked, undo_step = self.move_crate((row - 1, column), (row - 2, column))
             if not blocked:
                 self.level.player_position = (row - 1, column)
+
+        undo_step.holes = holes
 
         all_holes_filled = True
         for hole in self.level.holes.values():
@@ -375,7 +393,7 @@ class Application(tk.Frame):
 
     def move_crate(self, location, next_location):                              
         if self.is_blocked(location, next_location):                            
-            return True, None
+            return True, StepUndo()
 
         row, column = location                                                  
         next_row, next_column = next_location                                   
@@ -383,7 +401,7 @@ class Application(tk.Frame):
         crate = None                                                            
 
         step_undo = StepUndo()
-        step_undo.holes = self.level.holes.copy()
+        step_undo.maze_old = (location, self.level.maze[row][column])           
 
         if self.level.maze[row][column] is Maze.crate and self.level.maze[next_row][next_column] is Maze.floor:
             crate = tk.PhotoImage(file=Image.crate)                             
@@ -416,7 +434,6 @@ class Application(tk.Frame):
         if not crate:                                                               
             return False, step_undo
 
-        step_undo.maze_old = (location, self.level.maze[row][column])           
         step_undo.maze_new = (next_location, self.level.maze[next_row][next_column])
 
         step_undo.crates_old = (location, self.level.crates[location])

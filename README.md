@@ -1,6 +1,8 @@
 ### Docker
 ```bash
 sudo make build
+
+sudo xhost +
 sudo make run
 ```
 
