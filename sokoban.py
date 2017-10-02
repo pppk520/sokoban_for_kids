@@ -120,8 +120,8 @@ class Level(object):
 class StepUndo(object):
     def __init__(self):
         # record the diff part
-        self.maze_old = None
-        self.maze_new = None
+        self.org_maze_pre = None
+        self.org_maze_now = None
 
         # info only, directly copy full dict
         self.holes = {}
@@ -133,7 +133,7 @@ class StepUndo(object):
         self.player_position_old = None
 
     def __str__(self):
-        return 'maze_old = {}, maze_new = {}'.format(self.maze_old, self.maze_new)
+        return 'org_maze_pre = {}, org_maze_now = {}'.format(self.org_maze_pre, self.org_maze_now)
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -219,24 +219,23 @@ class Application(tk.Frame):
     def apply_step_undo(self, step_undo):
         self.level.holes = step_undo.holes
 
-        print(step_undo)
-
-        if step_undo.maze_old:
-            location, char = step_undo.maze_old
+        if step_undo.org_maze_pre:
+            location, char = step_undo.org_maze_pre
             row, column = location
 
             self.level.maze[row][column] = char
             self.draw_item(char, row, column)
 
-        if step_undo.maze_new:                                                  
-            location, char = step_undo.maze_new 
+        if step_undo.org_maze_now:                                                  
+            location, char = step_undo.org_maze_now 
             row, column = location                                              
-                                   
+     
+            # undo the change                              
             if location in self.level.crates:
                 self.level.crates[location].grid_forget()
             
-            self.level.maze[row][column] = ' '                                 
-            self.draw_item(' ', row, column)                                   
+            self.level.maze[row][column] = char
+            self.draw_item(char, row, column)
        
         self.level.player.grid_forget()
  
@@ -401,7 +400,9 @@ class Application(tk.Frame):
         crate = None                                                            
 
         step_undo = StepUndo()
-        step_undo.maze_old = (location, self.level.maze[row][column])           
+        # backup the original maze of "current" location and next location
+        step_undo.org_maze_pre = (location, self.level.maze[row][column])           
+        step_undo.org_maze_now = (next_location, self.level.maze[next_row][next_column])
 
         if self.level.maze[row][column] is Maze.crate and self.level.maze[next_row][next_column] is Maze.floor:
             crate = tk.PhotoImage(file=Image.crate)                             
@@ -433,8 +434,6 @@ class Application(tk.Frame):
                                                                                 
         if not crate:                                                               
             return False, step_undo
-
-        step_undo.maze_new = (next_location, self.level.maze[next_row][next_column])
 
         step_undo.crates_old = (location, self.level.crates[location])
         if next_location in self.level.crates:
