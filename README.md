@@ -9,6 +9,8 @@ sudo make run
 # the main process                                                                                
 python sokoban.py                                                               
 ```                                                                             
+
+![sokoban-for-kids](https://user-images.githubusercontent.com/6903521/31806823-0fbf36e6-b59d-11e7-91a8-c4a362f1256a.png)
                                                                                 
 ### Operations                                                                  
 **Left**, **Right**, **Top**, **Down** for moves                                                
@@ -39,9 +41,8 @@ class Application(tk.Frame):
 5. (Loop) If key is in monitoring, check and move crate/player, record status before moving for undo.
                                                                                 
                                                                                 
-### Reference                                                                   
+### Credit
 https://github.com/Risto-Stevcev/pysokoban.git                                  
                                                                                 
 ### Sokoban Levels                                                              
 www.sourcecode.se/sokoban/levels                                                
-~                                    
