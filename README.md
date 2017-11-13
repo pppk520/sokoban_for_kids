@@ -1,3 +1,7 @@
+## This project has two main objects
+1. Able to design "easy" levels for little kids
+2. Introduce program structure of a simple game for kids
+
 ### Docker                                                                      
 ```bash                                                                         
 # this is for x-window to accept signals from any source
@@ -40,9 +44,11 @@ class Application(tk.Frame):
 4. Draw player
 5. (Loop) If key is in monitoring, check and move crate/player, record status before moving for undo.
                                                                                 
+![sokoban_flow](https://user-images.githubusercontent.com/6903521/32718490-3de0e8c2-c898-11e7-94d5-13c18db3e086.png)
                                                                                 
 ### Credit
 https://github.com/Risto-Stevcev/pysokoban.git                                  
                                                                                 
 ### Sokoban Levels                                                              
 www.sourcecode.se/sokoban/levels                                                
+
